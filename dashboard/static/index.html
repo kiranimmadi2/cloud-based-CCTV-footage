@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>ClearVision</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<style>#map{height:100vh;}</style>
+</head>
+<body>
+<div id="map"></div>
+<script>
+const cams={cam1:[12.9716,77.5946]};
+const map=L.map('map').setView([12.9716,77.5946],12);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(map);
+const ws=new WebSocket('ws://'+location.host+'/ws');
+ws.onmessage=e=>{const d=JSON.parse(e.data);const p=cams[d.cam];if(p){L.marker(p).addTo(map).bindPopup(d.ts);} };
+</script>
+</body>
+</html>
