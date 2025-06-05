@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+opencv-python-headless
+ultralytics
+insightface
+confluent-kafka
+pymilvus
+networkx
+websockets

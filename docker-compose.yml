@@ -1,0 +1,55 @@
+version: '3.8'
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    ports:
+      - "9092:9092"
+
+  milvus-standalone:
+    image: milvusdb/milvus:v2.2.11
+    environment:
+      MILVUS_LOG_LEVEL: info
+    ports:
+      - "19530:19530"
+      - "9091:9091"
+
+  api:
+    build: ./api
+    depends_on:
+      - kafka
+      - milvus-standalone
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      MILVUS_HOST: milvus-standalone
+    ports:
+      - "8000:8000"
+
+  tracker:
+    build: ./tracker
+    depends_on:
+      - kafka
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+
+  dashboard:
+    build: ./dashboard
+    depends_on:
+      - api
+    ports:
+      - "3000:3000"
