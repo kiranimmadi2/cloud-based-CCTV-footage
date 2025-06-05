@@ -1,7 +1,7 @@
-version: '3.8'
+version: '3.9'
 services:
   zookeeper:
-    image: confluentinc/cp-zookeeper:7.4.0
+    image: confluentinc/cp-zookeeper:7.5.0
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
@@ -9,7 +9,7 @@ services:
       - "2181:2181"
 
   kafka:
-    image: confluentinc/cp-kafka:7.4.0
+    image: confluentinc/cp-kafka:7.5.0
     depends_on:
       - zookeeper
     environment:
@@ -22,34 +22,33 @@ services:
       - "9092:9092"
 
   milvus-standalone:
-    image: milvusdb/milvus:v2.2.11
-    environment:
-      MILVUS_LOG_LEVEL: info
+    image: milvusdb/milvus:v2.3.3
     ports:
       - "19530:19530"
       - "9091:9091"
 
   api:
-    build: ./api
+    build: .
+    command: uvicorn api.main:app --host 0.0.0.0 --port 8000
+    environment:
+      MILVUS_HOST: milvus-standalone
+      MILVUS_PORT: 19530
     depends_on:
       - kafka
       - milvus-standalone
-    environment:
-      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-      MILVUS_HOST: milvus-standalone
     ports:
       - "8000:8000"
 
   tracker:
-    build: ./tracker
+    build: .
+    command: python tracker/reid.py --live
     depends_on:
       - kafka
-    environment:
-      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
 
   dashboard:
-    build: ./dashboard
+    build: .
+    command: uvicorn dashboard.app:app --host 0.0.0.0 --port 8080
+    ports:
+      - "8080:8080"
     depends_on:
       - api
-    ports:
-      - "3000:3000"
