@@ -5,10 +5,5 @@
       "runtime": "python3.12",
       "maxDuration": 30
     }
-  },
-  "routes": [
-    { "src": "/api/(.*)", "dest": "/api/index.py" },
-    { "src": "/",         "dest": "/public/index.html" },
-    { "src": "/(.*)",     "dest": "/public/$1" }
-  ]
+  }
 }
