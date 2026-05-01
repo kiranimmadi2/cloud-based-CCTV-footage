@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ClearVision — Law Enforcement Portal</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body class="login-page">
+  <div class="grid-bg"></div>
+
+  <div class="login-card">
+    <div class="login-header">
+      <div class="seal">
+        <div class="seal-ring">
+          <div class="seal-inner">🛡️</div>
+        </div>
+      </div>
+      <div class="login-title">CLEARVISION</div>
+      <div class="login-sub">National Surveillance Intelligence Network</div>
+    </div>
+
+    <div class="classified-bar">
+      🔒 &nbsp; RESTRICTED ACCESS — AUTHORIZED PERSONNEL ONLY
+    </div>
+
+    <form id="loginForm" onsubmit="doLogin(event)" autocomplete="off">
+      <div class="field-group">
+        <label class="field-label">Officer / Badge ID</label>
+        <div class="field-wrap">
+          <span class="field-icon">👤</span>
+          <input type="text" id="username" placeholder="e.g. OFF-2024-BLR-1847" required />
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Password</label>
+        <div class="field-wrap">
+          <span class="field-icon">🔑</span>
+          <input type="password" id="password" placeholder="••••••••••" required />
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Department</label>
+        <div class="field-wrap">
+          <span class="field-icon">🏛️</span>
+          <select id="department">
+            <option value="CTU">Counter Terrorism Unit (CTU)</option>
+            <option value="CID">Criminal Investigation Dept (CID)</option>
+            <option value="Cyber">Cyber Crime Division</option>
+            <option value="IB">Intelligence Bureau (IB)</option>
+            <option value="STF">Special Task Force (STF)</option>
+            <option value="Local">Local Police — District HQ</option>
+          </select>
+        </div>
+      </div>
+      <button type="submit" class="btn-login" id="loginBtn">
+        <span id="loginIcon">🔐</span>
+        <span id="loginText">ACCESS SECURE PORTAL</span>
+      </button>
+    </form>
+
+    <div class="login-footer">
+      <span>ClearVision v2.0</span> &nbsp;·&nbsp; Powered by AI Face Recognition<br />
+      All sessions are monitored, logged, and subject to audit.<br />
+      Unauthorized access is a punishable offence under IT Act 2000.
+    </div>
+  </div>
+
+  <script>
+    function doLogin(e) {
+      e.preventDefault();
+      const user = document.getElementById('username').value.trim();
+      const dept = document.getElementById('department').value;
+      if (!user) return;
+      const btn = document.getElementById('loginBtn');
+      btn.disabled = true;
+      document.getElementById('loginIcon').textContent = '⏳';
+      document.getElementById('loginText').textContent = 'AUTHENTICATING...';
+      setTimeout(() => {
+        document.getElementById('loginText').textContent = 'LOADING DASHBOARD...';
+        sessionStorage.setItem('cv_user', user);
+        sessionStorage.setItem('cv_dept', dept);
+        setTimeout(() => { window.location.href = '/dashboard'; }, 400);
+      }, 1100);
+    }
+  </script>
+</body>
+</html>

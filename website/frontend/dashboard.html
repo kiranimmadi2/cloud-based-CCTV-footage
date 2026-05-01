@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ClearVision — Suspect Search</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+<div class="app">
+
+  <!-- ── TOP BAR ── -->
+  <header class="topbar">
+    <div class="topbar-brand">
+      <div class="brand-icon">🛡️</div>
+      <div>
+        <div class="brand-name">CLEARVISION</div>
+        <div class="brand-tag">Surveillance Intelligence</div>
+      </div>
+    </div>
+
+    <div class="topbar-stats">
+      <div class="stat-pill">
+        <div class="dot dot-green"></div>
+        <span class="val" id="topCams">—</span>
+        <span class="lbl">Cameras Online</span>
+      </div>
+      <div class="stat-pill">
+        <div class="dot dot-amber"></div>
+        <span class="val" id="topCases">—</span>
+        <span class="lbl">Active Cases</span>
+      </div>
+      <div class="stat-pill">
+        <div class="dot dot-red"></div>
+        <span class="val" id="topAlerts">—</span>
+        <span class="lbl">Alerts Today</span>
+      </div>
+      <div class="stat-pill">
+        <div class="dot dot-green"></div>
+        <span class="val" style="color:var(--green)">LIVE</span>
+        <span class="lbl">Network</span>
+      </div>
+    </div>
+
+    <div class="topbar-right">
+      <div class="user-chip">
+        <div class="user-avatar" id="userAvatar">—</div>
+        <div>
+          <div class="user-name" id="userName">Loading...</div>
+          <div class="user-dept" id="userDept">—</div>
+        </div>
+      </div>
+      <button class="btn-logout" onclick="logout()">LOGOUT</button>
+    </div>
+  </header>
+
+  <!-- ── LEFT SIDEBAR ── -->
+  <aside class="sidebar">
+    <div class="sidebar-scroll">
+
+      <!-- Case Info -->
+      <div>
+        <div class="section-label">Active Case</div>
+        <div class="case-bar">
+          <div class="case-id-wrap">
+            <div class="case-lbl">Case Number</div>
+            <div class="case-id" id="caseId">LOADING...</div>
+          </div>
+          <div id="priorityBadge" class="priority-badge pri-high">HIGH</div>
+        </div>
+      </div>
+
+      <!-- Suspect Photo -->
+      <div>
+        <div class="section-label">Suspect Photo</div>
+        <div class="upload-zone" id="uploadZone">
+          <div class="upload-icon">📷</div>
+          <div class="upload-text">Upload suspect photo</div>
+          <div class="upload-hint">Drag & drop or click · JPG, PNG, WEBP</div>
+          <input type="file" id="photoInput" accept="image/*" onchange="handlePhoto(event)" />
+        </div>
+        <div class="photo-preview" id="photoPreview">
+          <img id="previewImg" src="" alt="Suspect" />
+          <div class="photo-overlay">
+            <span class="photo-loaded-tag">✓ SUSPECT LOADED</span>
+            <button class="btn-change-photo" onclick="changePhoto()">Change</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search Parameters -->
+      <div>
+        <div class="section-label">Search Parameters</div>
+        <div class="param-row">
+
+          <div class="field-sm">
+            <label>Search City</label>
+            <select class="input-sm" id="citySelect" onchange="onCityChange(this.value)">
+              <option value="Bangalore">Bangalore — Karnataka</option>
+              <option value="Mumbai">Mumbai — Maharashtra</option>
+              <option value="Delhi">Delhi — NCR</option>
+              <option value="Chennai">Chennai — Tamil Nadu</option>
+              <option value="Hyderabad">Hyderabad — Telangana</option>
+            </select>
+          </div>
+
+          <div class="field-sm">
+            <label>Case Priority</label>
+            <div class="priority-row">
+              <div class="pri-btn" id="pri-CRITICAL" onclick="setPriority('CRITICAL')">🔴 CRITICAL</div>
+              <div class="pri-btn active-h" id="pri-HIGH" onclick="setPriority('HIGH')">🟡 HIGH</div>
+              <div class="pri-btn" id="pri-MEDIUM" onclick="setPriority('MEDIUM')">🔵 MEDIUM</div>
+              <div class="pri-btn" id="pri-LOW" onclick="setPriority('LOW')">🟢 LOW</div>
+            </div>
+          </div>
+
+          <div class="field-sm">
+            <label>Quick Interval</label>
+            <div class="interval-chips">
+              <div class="chip" onclick="setQuickInterval(1, this)">1 Hr</div>
+              <div class="chip" onclick="setQuickInterval(6, this)">6 Hrs</div>
+              <div class="chip active" onclick="setQuickInterval(24, this)">24 Hrs</div>
+              <div class="chip" onclick="setQuickInterval(48, this)">48 Hrs</div>
+              <div class="chip" onclick="setQuickInterval(168, this)">7 Days</div>
+            </div>
+          </div>
+
+          <div class="field-sm">
+            <label>Date & Time Range</label>
+            <div class="dt-row">
+              <div>
+                <label style="font-size:9px;color:var(--text2);display:block;margin-bottom:4px;letter-spacing:1px">FROM</label>
+                <input type="datetime-local" class="input-sm" id="startDt" />
+              </div>
+              <div>
+                <label style="font-size:9px;color:var(--text2);display:block;margin-bottom:4px;letter-spacing:1px">TO</label>
+                <input type="datetime-local" class="input-sm" id="endDt" />
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Search Button -->
+      <button class="btn-scan" id="scanBtn" onclick="runSearch()">
+        <div class="scan-spinner" id="scanSpinner"></div>
+        <span id="scanBtnText">⚡ INITIATE NETWORK SCAN</span>
+      </button>
+
+      <!-- Results -->
+      <div class="results-section" id="resultsSection" style="display:none">
+        <div class="section-label">Detection Results</div>
+
+        <div class="results-header-bar">
+          <div class="results-meta" id="resultsMeta"></div>
+          <button class="btn-export" id="exportBtn" onclick="exportReport()">⬇ Export</button>
+        </div>
+
+        <div class="summary-grid" id="summaryGrid"></div>
+
+        <div class="timeline" id="timeline"></div>
+      </div>
+
+    </div><!-- /sidebar-scroll -->
+  </aside>
+
+  <!-- ── MAP AREA ── -->
+  <div class="map-area">
+    <div id="map"></div>
+
+    <!-- Scan Overlay -->
+    <div class="scan-overlay" id="scanOverlay">
+      <div class="scan-modal">
+        <div class="scan-radar">
+          <div class="scan-radar-dot"></div>
+        </div>
+        <div class="scan-title">SCANNING NETWORK</div>
+        <div class="scan-sub" id="scanSub">Initializing face recognition engine...</div>
+        <div class="scan-progress-bg">
+          <div class="scan-progress-fill" id="scanFill"></div>
+        </div>
+        <div class="scan-stats">
+          <span id="scanCount">0 / 0 cameras</span>
+          <span id="scanPct">0%</span>
+        </div>
+        <div class="scan-status" id="scanStatus">Connecting to vector database...</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /app -->
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <div class="toast-inner">
+    <div class="toast-icon" id="toastIcon">✅</div>
+    <div>
+      <div class="toast-text" id="toastText">Done</div>
+      <div class="toast-sub" id="toastSub"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="/static/app.js"></script>
+</body>
+</html>
